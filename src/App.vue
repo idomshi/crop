@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, watchEffect } from 'vue';
-import smartcrop from 'smartcrop';
-import type { Crop } from 'smartcrop'
+import DropZone from './components/DropZone.vue'
+import { useSourceCanvas } from './composables/useSourceCanvas'
 
 const viewCanvas = ref<HTMLCanvasElement>()
 const viewCtx = ref<CanvasRenderingContext2D>()
-const sourceCanvas = ref<OffscreenCanvas>()
-const crop = ref<Crop>()
-const width = ref(2)
-const height = ref(3)
-const minScale = ref(0.5)
+
+const { sourceCanvas, crop } = useSourceCanvas()
 
 // sourceCanvasが更新されたらviewCanvasを更新する。
 watchEffect(async () => {
@@ -19,10 +16,6 @@ watchEffect(async () => {
   viewCanvas.value.width = sourceCanvas.value.width
   viewCanvas.value.height = sourceCanvas.value.height
   viewCtx.value?.drawImage(sourceCanvas.value, 0, 0)
-
-  // cropを計算する。
-  const result = await smartcrop.crop(sourceCanvas.value, { width: width.value, height: height.value, minScale: minScale.value })
-  crop.value = result.topCrop
 })
 
 watchEffect(() => {
@@ -40,28 +33,9 @@ watchEffect(() => {
   viewCtx.value.stroke()
 })
 
-// ファイルを読み取る。
-const fileinput = ref<HTMLInputElement>()
 onMounted(() => {
   // canvas関係のContext2Dを取得する。
   viewCtx.value = viewCanvas.value?.getContext("2d") ?? undefined
-
-  // input要素にEventListenerを追加する。
-  if (fileinput.value === undefined) return
-  fileinput.value.addEventListener('change', (ev: Event) => {
-    const target = ev.target
-    if (!(target instanceof HTMLInputElement)) return
-
-    if (target.files === null) return
-    const result = target.files[0]
-    createImageBitmap(result)
-      .then((bmp) => {
-        sourceCanvas.value = new OffscreenCanvas(bmp.width, bmp.height)
-        const ctx = sourceCanvas.value.getContext("2d")
-        ctx?.drawImage(bmp, 0, 0)
-      })
-      .then(() => crop.value = undefined)
-  })
 })
 
 async function downloadImage() {
@@ -83,14 +57,16 @@ async function downloadImage() {
 </script>
 
 <template>
-  <div>
-    <div>
+  <div class="main">
+    <div :class="{ hidden: sourceCanvas === undefined }" class="flex-1">
       <canvas ref="viewCanvas" class="viewcanvas"></canvas>
+      <div>
+        <button type="button" @click="downloadImage">download</button>
+      </div>
     </div>
-    <div>
-      <button type="button" @click="downloadImage">download</button>
+    <div v-if="sourceCanvas === undefined">
+      <DropZone></DropZone>
     </div>
-    <input type="file" ref="fileinput">
   </div>
 </template>
 
@@ -99,5 +75,13 @@ async function downloadImage() {
   max-width: 80%;
   max-height: 80dvh;
   border: solid 1px #333;
+}
+
+.main {
+  @apply w-full h-dvh p-2 flex flex-col gap-2;
+
+  &>div {
+    @apply flex-1;
+  }
 }
 </style>
