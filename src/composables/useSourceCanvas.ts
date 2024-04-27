@@ -5,8 +5,8 @@ import type { Crop } from 'smartcrop'
 const sourceCanvas = ref<OffscreenCanvas>()
 const crop = ref<Crop>()
 
-const width = ref(300)
-const height = ref(400)
+const width = ref(3)
+const height = ref(4)
 const minScale = ref(0.5)
 
 export function useSourceCanvas() {
