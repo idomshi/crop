@@ -1,4 +1,4 @@
-import { readonly, ref, watchEffect } from "vue";
+import { Ref, readonly, ref, watchEffect } from "vue";
 import smartcrop from 'smartcrop';
 import type { Crop } from 'smartcrop'
 
@@ -8,6 +8,14 @@ const crop = ref<Crop>()
 const width = ref(3)
 const height = ref(4)
 const minScale = ref(0.5)
+
+function numberSetter(ref: Ref<number>) {
+  return function (value: string) {
+    const v = parseFloat(value)
+    if (isNaN(v)) return
+    ref.value = v
+  }
+}
 
 export function useSourceCanvas() {
   function drawImage(bmp: ImageBitmap) {
@@ -35,5 +43,7 @@ export function useSourceCanvas() {
     height,
     minScale,
     drawImage,
+    setWidth: numberSetter(width),
+    setHeight: numberSetter(height),
   }
 }
