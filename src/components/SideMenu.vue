@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DownloadButton from './DownloadButton.vue';
 import { useSourceCanvas } from '../composables/useSourceCanvas';
-const { width, height, setWidth, setHeight } = useSourceCanvas()
+const { width, height, setWidth, setHeight, calculate } = useSourceCanvas()
 
 function setW(ev: Event) {
     const target = ev.target
@@ -18,11 +18,15 @@ function setH(ev: Event) {
 
 <template>
     <aside class="sidemenuroot">
-        <section class="">
+        <section class="flex flex-col gap-1">
             <legend for="width" class="text-sm text-gray-800">width: </legend><input id="width" type="text"
                 :value="width" @input="setW" class="ml-2 w-20 p-1 text-right border rounded">
             <legend for="height" class="text-sm text-gray-800">height: </legend><input id="height" type="text"
                 :value="height" @input="setH" class="ml-2 w-20 p-1 text-right border rounded">
+            <button type="button" @click="calculate"
+                class="p-2 text-white bg-slate-500 hover:bg-slate-400 rounded border">
+                計算する
+            </button>
         </section>
         <section>
             <DownloadButton></DownloadButton>

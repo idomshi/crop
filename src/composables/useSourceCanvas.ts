@@ -1,4 +1,4 @@
-import { Ref, readonly, ref, watchEffect } from "vue";
+import { Ref, readonly, ref } from "vue";
 import smartcrop from 'smartcrop';
 import type { Crop } from 'smartcrop'
 
@@ -24,8 +24,9 @@ export function useSourceCanvas() {
     ctx?.drawImage(bmp, 0, 0)
   }
 
-  watchEffect(async () => {
-    // cropを計算する。
+  /** cropを計算する。 */
+  async function calculate() {
+    if (!(width.value > 0 && height.value > 0)) return
     if (sourceCanvas.value === undefined) return
     const result = await smartcrop.crop(
       sourceCanvas.value,
@@ -35,7 +36,8 @@ export function useSourceCanvas() {
         minScale: minScale.value
       })
     crop.value = result.topCrop
-  })
+  }
+
   return {
     sourceCanvas: readonly(sourceCanvas),
     crop,
@@ -45,5 +47,6 @@ export function useSourceCanvas() {
     drawImage,
     setWidth: numberSetter(width),
     setHeight: numberSetter(height),
+    calculate,
   }
 }
